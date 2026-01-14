@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.common.exceptions import NoSuchElementException
 import time
 
 
@@ -50,7 +51,7 @@ def parser_local_site(*, site, items, driver: WebDriver) -> list[str]:
     Парсим страницы заказов вызванные из функции parser_site и из списка items
 
     :return: Description
-    :rtype: list[[str,str,str...], [str,str,str...]...]
+    :rtype: list[{str,str,str...}, {str,str,str...}...]
     """
 
     list_items = [] # Нужен только для сбора данных
@@ -69,13 +70,27 @@ def parser_local_site(*, site, items, driver: WebDriver) -> list[str]:
         owner_product = (driver.find_element(By.CLASS_NAME, "m-infoblock__layout.ng-star-inserted").text)[9:]
         price_product = (driver.find_elements(By.CLASS_NAME, "m-infoblock__layout.ng-star-inserted")[1].text)[18:]
         
-        GlobalStart_date = driver.find_element(By.CLASS_NAME, "m-rangebox__layout")
-        start_date = GlobalStart_date.find_element(By.CLASS_NAME, "m-rangebox__date.ng-star-inserted").text
-        GlobalEnd_date = driver.find_element(By.CLASS_NAME, "m-rangebox__layout.m-rangebox__layout--rtl")
-        end_date = GlobalEnd_date.find_element(By.CLASS_NAME, "m-rangebox__date.ng-star-inserted").text
+        try: 
+            GlobalStart_date = driver.find_element(By.CLASS_NAME, "m-rangebox__layout")
+            start_date = GlobalStart_date.find_element(By.CLASS_NAME, "m-rangebox__date.ng-star-inserted").text
+        except NoSuchElementException:
+            start_date = ""
+        
+        try:
+            GlobalEnd_date = driver.find_element(By.CLASS_NAME, "m-rangebox__layout.m-rangebox__layout--rtl")
+            end_date = GlobalEnd_date.find_element(By.CLASS_NAME, "m-rangebox__date.ng-star-inserted").text
+        except NoSuchElementException:
+            end_date = ""
 
-        # Создаем удобный для нас массив и отправляет его в глобальный массив данных.
-        item = [new_site, item_id, start_date, end_date, name_product, owner_product, price_product]
+        # Создаем удобный для нас список и отправляет его в глобальный массив данных.
+        item = {"URL": new_site,
+                "ID": item_id, 
+                "START_DATE": start_date, 
+                "END_DATE": end_date, 
+                "NAME": name_product, 
+                "OWNER": owner_product, 
+                "PRICE": price_product
+            }
         list_items.append(item)
     return list_items
 

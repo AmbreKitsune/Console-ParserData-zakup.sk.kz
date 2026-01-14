@@ -5,13 +5,27 @@ def output(*, items_list: list):
     Создание CSV файла из полученных данных.
     """
     
-    data = [
-        ['САЙТ', 'НОМЕР ПРОДУКТА', 'НАЧАЛО ПРИЁМА ЗАКАЗОВ', 'КОНЕЦ ПРИЁМА ЗАЯВОК', 'НАЗВАНИЕ ПРОДУКТА', 'ЗАКАЗЧИК ПРОДУКТА', 'ОБЩАЯ СУММА ЛОТОВ'],
+    headers = [
+        'САЙТ', 
+        'НОМЕР ПРОДУКТА', 
+        'НАЧАЛО ПРИЁМА ЗАКАЗОВ', 
+        'КОНЕЦ ПРИЁМА ЗАЯВОК', 
+        'НАЗВАНИЕ ПРОДУКТА', 
+        'ЗАКАЗЧИК ПРОДУКТА', 
+        'ОБЩАЯ СУММА ЛОТОВ'
     ]
 
-    for item in items_list:
-        data.append(item)
-
-    with open('output_data.csv', mode='w', newline='', encoding='utf-8') as file:
+    with open('output_data.csv', mode='w', newline='', encoding='utf-8-sig') as file:
         writer = csv.writer(file)
-        writer.writerows(data)
+        writer.writerow(headers)
+
+        for item in items_list:
+            writer.writerow([
+                item.get("URL", ""),
+                item.get("ID", ""),
+                item.get("START_DATE", ""),
+                item.get("END_DATE", ""),
+                item.get("NAME", ""),
+                item.get("OWNER", ""),
+                item.get("PRICE", ""),
+            ])
