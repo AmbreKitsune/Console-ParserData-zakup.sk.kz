@@ -24,19 +24,49 @@
 
 ### 1) Установка библиотек
 
-#### Установка Selenium
+Установите Selenium
 ```bash
 pip install selenium
 ```
 
-### 2) Установка драйвера
+### 2) Создание .exe файла. (по желанию)
+
+#### 1. Установка PyInstaller
+```bash
+pip install pyinstaller
+```
+
+#### 2. Переходим в папку src
+```bash
+cd src
+```
+
+#### 3. Создаём .exe
+
+**Без иконки:**
+```bash
+python -m PyInstaller --onefile --hidden-import=selenium --hidden-import=selenium.webdriver main.py
+```
+
+**С иконкой:**
+```bash
+python -m PyInstaller --onefile --icon=../logo.ico --hidden-import=selenium --hidden-import=selenium.webdriver main.py
+```
+
+#### 4. Где искать результат?
+Готовый `.exe` будет лежать в папке:
+- `./dist/main.exe`
+
+
+### 3) Установка драйвера
 
 - Я использовал **msedgedriver.exe** (Edge)
 - Скачать: [CLICK](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver)
 - Выбирать: **Stable Channel x64**
+- Кидать: **рядом с испольняемым файлом**.
 
 
-### 3) Запуск программы/скрипта.
+### 4) Запуск программы/скрипта.
     
 1. Запускаем программу/скрипт и проверяем ошибки.
 
