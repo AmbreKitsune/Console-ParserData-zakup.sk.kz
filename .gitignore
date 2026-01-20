@@ -40,3 +40,4 @@ __pypackages__/
 *.ini
 *.spec
 *.txt
+*.csv
