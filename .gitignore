@@ -39,3 +39,4 @@ __pypackages__/
 *.exe
 *.ini
 *.spec
+*.txt
