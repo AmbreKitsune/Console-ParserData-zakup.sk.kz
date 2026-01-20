@@ -41,3 +41,4 @@ __pypackages__/
 *.spec
 *.txt
 *.csv
+*.log
