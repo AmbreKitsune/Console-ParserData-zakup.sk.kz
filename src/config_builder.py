@@ -2,10 +2,12 @@ import os
 import configparser
 import questions
 import exception_build
+import logging
 
 
 class WorksConfigs:
-    def __init__(self) -> None:
+    def __init__(self, *, logger: logging.Logger) -> None:
+        self.logger = logger
         self.file_name: str | None = None
         self.type_configs: str | None = None
         self.site: str | None = None
@@ -29,16 +31,18 @@ class WorksConfigs:
             if self.type_configs == "Create":
                 self.choosing_create_file_or_folder()
 
-        print(self.file_name)
         self.reader_file_config()
         
         
     def check_file_config(self):
         if os.path.exists(".\\configs"):
+            self.logger.info("Загрузка конфига с папки")
             return "Folder"
         if os.path.exists(".\\config.ini"):
+            self.logger.info("Загрузка конфига с корневой папки")
             self.file_name = ".\\config.ini"
             return "File" 
+        self.logger.info("Создание конфиг файла")
         return "Create"
 
     def choosing_create_file_or_folder(self):
@@ -94,6 +98,8 @@ class WorksConfigs:
         # Записываем данные в ini для будущих запросов и быстрой подготовки данных по тем же запросам.
         with open(self.file_name, 'w', encoding="UTF-8") as file: # type: ignore
             config.write(file)
+        
+        self.logger.info("Файл конфига успешно был создан!")
 
 
     def create_folders_configs(self) -> None:
@@ -134,21 +140,26 @@ class WorksConfigs:
             config['EXT']['lst'] = ",".join(status_purchase)
         else:
             # FIXME: заглушка, сразу уходим.
+            self.logger.error("Данная функция ещё не доступна!", exc_info=True)
             raise exception_build.ErrorInWorking 
 
         # Записываем данные в ini для будущих запросов и быстрой подготовки данных по тем же запросам.
         file_name = f".\\configs\\{"_".join(list_q)}"
         
         if os.path.exists(file_name):
+            self.logger.error("Такая папка уже есть!", exc_info=True)
             return
         os.mkdir(file_name)
         
         with open(f"{file_name}\\config.ini", 'w', encoding="UTF-8") as file: # type: ignore
             config.write(file)
+        
+        self.logger.info("Папка с конфигом успешно была создана!")
 
     def work_in_folder_configs(self):
         content = os.listdir(".\\configs")
         if not content:
+            self.logger.critical("В .\\configs нет ни одного конфига, папка удалена!", exc_info=True)
             os.rmdir(".\\configs")
             return
         
@@ -178,16 +189,19 @@ class WorksConfigs:
         
         # Если файла нет - ошибка,
         if not files_read:
+            self.logger.critical("Не правильная загрузка конфига с папки!", exc_info=True)
             raise exception_build.ErrorMissingConfigFile
         
 
         # FIXME: Начинаем идти по config.ini и выносить данные от туда
         if not config.has_option('GLOBAL', 'site'):
+            self.logger.critical("Не верные данные конфига!", exc_info=True)
             os.remove(self.file_name) # type: ignore
             raise exception_build.ErrorIncorrectData
 
         self.site = config['GLOBAL']['site']
         if not (self.site):
+            self.logger.critical("Не верные данные конфига!", exc_info=True)
             os.remove(self.file_name) # type: ignore
             raise exception_build.ErrorIncorrectData
     

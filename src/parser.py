@@ -4,10 +4,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 import time
+import logging
 
 import save_data
 
-def parser_site(*, url, driver: WebDriver) -> list[str]:
+
+def parser_site(*, logger: logging.Logger, url, driver: WebDriver) -> list[str]:
     """
     Парсинг главной страницы сайт и сбор номеров заказов. 
 
@@ -23,7 +25,7 @@ def parser_site(*, url, driver: WebDriver) -> list[str]:
     for q in url_q:
         for status in url_end:
             url_items.append(f"{url_start}{q}&adst={status}&lst={status}")
-    # Переходим на нужную страницу и ждем прогрузку + 5 секунд для загрущки JS.
+    # Переходим на нужную страницу и ждем загрузку сайта + 5 секунд для загрузки JS.
     for i_url in url_items:
         driver.get(f"{i_url}&page=1")
         time.sleep(1)
@@ -55,13 +57,14 @@ def parser_site(*, url, driver: WebDriver) -> list[str]:
                 
                 next_li.find_element(By.TAG_NAME, "a").click()
             except NoSuchElementException:
+                logger.error("Кнопки дальше отсутствует", exc_info=True)
                 break
     
     save_data.save_data_old_id(new_list_id)
     return items_id
 
 
-def parser_local_site(*, site, items, driver: WebDriver) -> list[str]:
+def parser_local_site(*, logger: logging.Logger, site, items, driver: WebDriver) -> list[str]:
     """
     Парсим страницы заказов вызванные из функции parser_site и из списка items
 
@@ -81,6 +84,7 @@ def parser_local_site(*, site, items, driver: WebDriver) -> list[str]:
         try:
             item_id = (driver.find_element(By.CLASS_NAME, "m-modal__num").text)[2:]
         except NoSuchElementException:
+            logger.critical("критическая ошибка страницы, перезапуск страницы", exc_info=True)
             driver.refresh()
             time.sleep(3)
             continue
@@ -115,10 +119,12 @@ def parser_local_site(*, site, items, driver: WebDriver) -> list[str]:
             close_btn = driver.find_element(By.CLASS_NAME, "m-modal__close-button")
             close_btn.click()
         except NoSuchElementException:
+            logger.critical("критическая ошибка страницы, перезапуск страницы", exc_info=True)
             driver.refresh()
             time.sleep(3)
             continue
         except ElementClickInterceptedException:
+            logger.critical("критическая ошибка страницы, перезапуск страницы", exc_info=True)
             driver.refresh()
             time.sleep(3)
             continue
@@ -129,15 +135,15 @@ def parser_local_site(*, site, items, driver: WebDriver) -> list[str]:
     return list_items
 
 
-def main_parser(*, site, url) -> list[str]:
+def main_parser(*, logger, site, url) -> list[str]:
     #FIXME: Подключаем драйвер и сразу запускаем браузер. Долго
     driver = webdriver.Edge()
     WebDriverWait(driver, 10).until(lambda d: d.current_url is not None)
 
     # Сперва собираем данные номеров заказа.
     # Проходимся по номерам локально и собираем данные заказов там.
-    items_list = parser_site(url=url, driver=driver)    
-    items_data = parser_local_site(site=site, items=items_list, driver=driver)
+    items_list = parser_site(logger=logger, url=url, driver=driver)    
+    items_data = parser_local_site(logger=logger, site=site, items=items_list, driver=driver)
 
     # Завершаем driver - закрываем браузер.
     # Смотрим данные и отправляем их назад.
