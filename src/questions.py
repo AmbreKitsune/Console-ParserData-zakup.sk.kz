@@ -1,6 +1,6 @@
 import exception_build
 
-def type_for_purchase() -> str | bool:
+def type_for_purchase() -> str:
     """
     Запрос типа закупки.
     
@@ -25,25 +25,30 @@ def search_for_purchase() -> str:
     :return: Description
     :rtype: str
     """
-    print("Слова для поиска или номер закупки? (можно пустой)")
+    print("Слова для поиска или номер закупки? (можно пустой) (добавить несколько можно через запятую)")
     q = input("Ваш ответ: ")
     return q
 
-def status_for_purchase() -> str:
+def status_for_purchase() -> list[str]:
     """
     Выбор статуса заказа(-ов)
     
     :return: Description
-    :rtype: str
+    :rtype: list[str]
     """
     print("Выберите статус заказа(-ов): \n1 - Опубликовано\n2 - Опубликовано предварительное обсуждени\nЛюбой не правильный ответ, выдаст ошибку!")
-    tabs = input("Ваш ответ: ")
-    match tabs:
-        case "1":
-            return "PUBLISHED"
-        case "2":
-            return "DISCUSSION_PUBLISHED"
-    raise exception_build.ErrorIncorrectType
+    tabs = input("Ваш ответ: ").split(",")
+    
+    list_tabs = []
+    for t in tabs:
+        match t:
+            case "1":
+                list_tabs.append("PUBLISHED")
+            case "2":
+                list_tabs.append("DISCUSSION_PUBLISHED")
+            case _:
+                raise exception_build.ErrorIncorrectType
+    return list_tabs
 
 def services() -> str:
     """
