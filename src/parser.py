@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, StaleElementReferenceException
 import time
 import logging
 
@@ -36,12 +36,17 @@ def parser_site(*, logger: logging.Logger, url, driver: WebDriver) -> list[str]:
             items_elements = driver.find_elements(By.CLASS_NAME, "m-sidebar__layout--found-item")
             if items_elements:
                 for item in items_elements:
-                    item_id = item.find_element(By.CLASS_NAME, "m-found-item__num")
-                    id_str = (item_id.text)[2:]
-                    if id_str not in items_id and id_str not in old_list_id:
-                        items_id.append(id_str)
-                    if id_str not in new_list_id:
-                        new_list_id.append(id_str)
+                    try:
+                        item_id = item.find_element(By.CLASS_NAME, "m-found-item__num")
+                        id_str = (item_id.text)[2:]
+                        if id_str not in items_id and id_str not in old_list_id:
+                            items_id.append(id_str)
+                        if id_str not in new_list_id:
+                            new_list_id.append(id_str)
+                    except StaleElementReferenceException:
+                        logger.error("Элемент сдох, ничего страшного, продолжаем!", exc_info=True)
+                        continue
+
             
             # FIXME: На данный момент переход на следующие выполнен очень плохо и топорно, бывает падает и ловить баги... 
             # НО работает для v0.1.
