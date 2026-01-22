@@ -42,3 +42,4 @@ __pypackages__/
 *.txt
 *.csv
 *.log
+output/

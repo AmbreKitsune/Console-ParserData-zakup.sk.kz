@@ -1,4 +1,6 @@
+import os
 import csv
+from datetime import datetime
 
 def output(*, items_list: list):
     """
@@ -15,7 +17,13 @@ def output(*, items_list: list):
         'ОБЩАЯ СУММА ЛОТОВ'
     ]
 
-    with open('output_data.csv', mode='w', newline='', encoding='utf-8-sig') as file:
+    now = datetime.now()
+    text = f"data-{now:%d.%m.%Y}-{now:%H_%M}.csv"
+
+    if not os.path.exists("output"):
+        os.mkdir("output")
+
+    with open(f"output/{text}", mode='w', newline='', encoding='utf-8-sig') as file:
         writer = csv.writer(file)
         writer.writerow(headers)
 
